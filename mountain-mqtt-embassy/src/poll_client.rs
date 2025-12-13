@@ -17,7 +17,6 @@ use embassy_sync::{
     channel::{Channel, Receiver, Sender},
 };
 use embassy_time::{Duration, Instant, Timer};
-use embedded_io_async::Write;
 use heapless::Vec;
 #[cfg(feature = "log")]
 use log::{info, warn};
@@ -156,7 +155,7 @@ where
             // Ignore packets with length 0 - we can use these as a way to flush
             // the buffer.
             if write.len > 0 {
-                if let Err(e) = tx.write_all(write.msg_data()).await {
+                if let Err(e) = tx.write(write.msg_data()).await {
                     return e;
                 }
             }
