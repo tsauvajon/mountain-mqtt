@@ -5,6 +5,7 @@ use crate::{
     packet_bin::{self, PacketBin},
     packet_bin_client::PacketBinClient,
 };
+#[cfg(feature = "defmt")]
 use defmt::{info, warn};
 use embassy_futures::select::{select3, Either3};
 use embassy_net::{
@@ -16,8 +17,9 @@ use embassy_sync::{
     channel::{Channel, Receiver, Sender},
 };
 use embassy_time::{Duration, Instant, Timer};
-use embedded_io_async::Write;
 use heapless::Vec;
+#[cfg(feature = "log")]
+use log::{info, warn};
 use mountain_mqtt::{
     client::{ClientError, ClientReceivedEvent, ConnectionSettings},
     client_state::{ClientState, ClientStateError, ClientStateReceiveEvent},
@@ -79,6 +81,7 @@ impl Settings {
     }
 }
 
+#[cfg_attr(feature = "log", derive(Debug))]
 pub enum MqttConnectionError {
     ConnectError(ConnectError),
     ClientError(ClientError),
@@ -152,7 +155,7 @@ where
             // Ignore packets with length 0 - we can use these as a way to flush
             // the buffer.
             if write.len > 0 {
-                if let Err(e) = tx.write_all(write.msg_data()).await {
+                if let Err(e) = tx.write(write.msg_data()).await {
                     return e;
                 }
             }
